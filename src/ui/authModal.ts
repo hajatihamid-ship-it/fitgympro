@@ -1,6 +1,7 @@
 
 import { getUsers, saveUsers, saveUserData, addActivityLog } from '../services/storage';
 import { showToast } from '../utils/dom';
+import { auth, provider, signInWithPopup } from '../services/firebaseAuth';
 
 // --- SVG Icons ---
 const ICONS = {
@@ -58,7 +59,7 @@ export const renderAuthModal = (): string => `
             <button type="submit" class="submit-btn">ورود</button>
             <div class="divider">یا با</div>
             <div class="social-logins">
-                <button type="button" class="social-btn">${ICONS.google}</button>
+                <button type="button" id="google-login-btn" class="social-btn">${ICONS.google}</button>
                 <button type="button" class="social-btn">${ICONS.github}</button>
             </div>
           </form>
@@ -163,9 +164,61 @@ export const initAuthListeners = (onLoginSuccess: (username: string) => void) =>
         switchAuthForm('login');
     });
 
-    document.querySelectorAll('.social-btn').forEach(btn => {
+    document.querySelectorAll('.social-btn:not(#google-login-btn)').forEach(btn => {
         btn.addEventListener('click', () => showToast('این ویژگی به زودی اضافه خواهد شد!', 'info'));
     });
+
+    const googleLoginBtn = document.getElementById('google-login-btn');
+    if (googleLoginBtn) {
+        googleLoginBtn.addEventListener('click', async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+
+                if (user && user.email) {
+                    const { displayName, email } = user;
+                    const users = await getUsers();
+                    let appUser = users.find(u => u.email === email);
+
+                    if (!appUser) {
+                        // Create a new user if they don't exist
+                        const newUsername = displayName || email.split('@')[0];
+                        let finalUsername = newUsername;
+                        let counter = 1;
+                        while(users.some(u => u.username === finalUsername)) {
+                            finalUsername = `${newUsername}${counter}`;
+                            counter++;
+                        }
+
+                        appUser = {
+                            username: finalUsername,
+                            email: email,
+                            password: '', // No password for OAuth users
+                            role: 'user' as const,
+                            status: 'active' as const,
+                            coachStatus: null,
+                            joinDate: new Date().toISOString()
+                        };
+
+                        await saveUsers([...users, appUser]);
+                        await saveUserData(appUser.username, { joinDate: appUser.joinDate });
+                        await addActivityLog(`New user registered via Google: ${appUser.username}`);
+                        showToast(`خوش آمدید، ${appUser.username}!`, 'success');
+                    } else {
+                         if (appUser.status === 'suspended') {
+                            showToast('حساب کاربری شما مسدود شده است.', 'error');
+                            return; // Stop the login process
+                        }
+                        showToast(`خوش آمدید، ${appUser.username}!`, 'success');
+                    }
+                    onLoginSuccess(appUser.username);
+                }
+            } catch (error) {
+                console.error("Error during Google sign-in:", error);
+                showToast('خطا در ورود با گوگل. لطفا دوباره امتحان کنید.', 'error');
+            }
+        });
+    }
 };
 
 

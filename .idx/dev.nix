@@ -3,21 +3,22 @@
   packages = [
     pkgs.nodejs_20
   ];
+  services.mongodb.enable = true;
   idx.extensions = [
-    "svelte.svelte-vscode"
+    "svelte.svelte-vscode",
     "vue.volar"
   ];
   idx.previews = {
     previews = {
       web = {
         command = [
-          "npm"
-          "run"
-          "dev"
-          "--"
-          "--port"
-          "$PORT"
-          "--host"
+          "npm",
+          "run",
+          "dev",
+          "--",
+          "--port",
+          "$PORT",
+          "--host",
           "0.0.0.0"
         ];
         manager = "web";
