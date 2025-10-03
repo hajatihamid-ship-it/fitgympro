@@ -62,6 +62,9 @@ export const renderAuthModal = (): string => {
               </div>
               <a href="#" class="forgot-password-link">رمز عبور را فراموش کرده‌اید؟</a>
               <button type="submit" class="submit-btn">ورود</button>
+              <div class="divider">یا</div>
+              <button type="button" class="social-btn google-btn">ورود با گوگل</button>
+              <button type="button" class="social-btn github-btn">ورود با گیت‌هاب</button>
             </form>
 
             <!-- Sign Up Form -->
@@ -240,6 +243,12 @@ export const initAuthListeners = (onLoginSuccess: (username: string) => void) =>
           }
       });
   });
+
+    document.querySelectorAll('.social-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            showToast('این ویژگی به زودی اضافه خواهد شد!', 'info');
+        });
+    });
 };
 
 const getAuthModalCSS = (): string => {
@@ -303,6 +312,12 @@ const getAuthModalCSS = (): string => {
       color: #fff;
       font-size: 1rem;
       box-sizing: border-box;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .input-group input:focus {
+        outline: none;
+        border-color: #00aaff;
+        box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.2);
     }
     .password-wrapper {
         position: relative;
@@ -350,6 +365,43 @@ const getAuthModalCSS = (): string => {
     }
     .submit-btn:hover {
       background-color: #0088cc;
+    }
+    .divider {
+        text-align: center;
+        margin: 1.5rem 0;
+        color: #777;
+        font-size: 0.9rem;
+        position: relative;
+    }
+    .divider::before, .divider::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        width: 40%;
+        height: 1px;
+        background-color: #444;
+    }
+    .divider::before {
+        left: 0;
+    }
+    .divider::after {
+        right: 0;
+    }
+    .social-btn {
+        width: 100%;
+        padding: 0.8rem;
+        margin-bottom: 0.8rem;
+        border-radius: 5px;
+        border: 1px solid #555;
+        background-color: #333;
+        color: #fff;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s, border-color 0.2s;
+    }
+    .social-btn:hover {
+        background-color: #444;
+        border-color: #777;
     }
   </style>
   `;
